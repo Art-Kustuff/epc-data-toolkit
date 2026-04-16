@@ -1,4 +1,4 @@
-# EPC Data Toolkit
+# EPC Engineering Data Quality Toolkit
 
 Public-safe toolkit and portfolio repository for engineering data validation, reporting readiness checks, and dashboard-oriented data preparation in EPC/LNG environments.
 
@@ -10,6 +10,8 @@ This repository supports two portfolio case studies:
 
 - **Case 02 — Tag Data Quality Monitoring & Validation Framework**
 - **Case 03 — Proposed Data Validation Pipeline & Reporting Refresh**
+
+The four utilities below support these case studies by covering different aspects of data validation, reporting readiness, and reporting pipeline design.
 
 The focus is not on exposing project-specific data or internal workflows, but on demonstrating the validation logic, reporting controls, and architecture thinking behind reliable engineering data analytics.
 
@@ -52,9 +54,26 @@ Illustrative architecture concept for:
 
 **Purpose:** demonstrate how validation logic can be integrated into a broader reporting pipeline.
 
+## Quick start
+
+Install dependencies:
+
+```bash
+pip install pandas openpyxl
+```
+
+Run a utility:
+
+```bash
+python weekly_health_check.py
+python planning_setup_validator.py
+```
+
+> Some tools in this repository are portfolio-oriented utilities and may require local input files or safe example datasets to run.
+
 ## Portfolio positioning
 
-This repository is intended as a **public portfolio artifact**.  
+This repository is intended as a **public portfolio artifact**.
 It demonstrates how engineering data can be:
 
 - validated before reporting
@@ -75,23 +94,11 @@ Where applicable:
 - contractor references are anonymized
 - examples are shown to demonstrate logic, not live operational status
 
-## Typical use cases
-
-These utilities are relevant for workflows such as:
-
-- engineering tag data quality checks
-- reporting readiness review
-- week-over-week data health monitoring
-- planning setup validation
-- dashboard input preparation
-- contractor data quality comparison
-
 ## Tech stack
 
 - Python
 - Excel-based data processing
 - Power BI reporting workflows
-- PowerShell utilities
 - EPC / LNG engineering data context
 - EasyPlant-oriented reporting logic
 - Validation-first reporting approach
@@ -111,9 +118,9 @@ This toolkit is built around one idea:
 
 ## Author
 
-**Artem Kustov**  
-EPC Data & Automation Specialist  
+**Artem Kustov**
+Engineering Data & Reporting Specialist
 Doha, Qatar
 
-Portfolio: `art-kustuff.github.io`  
+Portfolio: `art-kustuff.github.io`
 GitHub: `github.com/Art-Kustuff`
