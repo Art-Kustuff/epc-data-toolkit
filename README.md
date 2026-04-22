@@ -158,23 +158,28 @@ Small PowerShell utility for routing engineering deliverables into discipline / 
 
 Install dependencies:
 
+```bash
 pip install pandas openpyxl
-
+```
 Run a utility:
-
+```bash
 python tools/tag_register_validator.py
 python tools/weekly_health_check.py
 python tools/planning_setup_validator.py
 python tools/fwbs_suggester.py
-
+python tools/tag_register_validator.py
+python tools/weekly_health_check.py
+python tools/planning_setup_validator.py
+python tools/fwbs_suggester.py
+```
 Run the PowerShell organizer:
-
+```bash
 .\tools\file_organizer.ps1 -SourcePath "C:\Docs" -DestPath "C:\Organized" -LogOnly
-
+```
 Run the refresh pipeline prototype:
-
+```bash
 python tools/auto_refresh_pipeline.py --files ./exports/ --output ./dashboard_data
-
+```
 Some tools in this repository are portfolio-oriented utilities and may require local input files or safe example datasets to run.
 
 Public-safe note
