@@ -167,10 +167,6 @@ python tools/tag_register_validator.py
 python tools/weekly_health_check.py
 python tools/planning_setup_validator.py
 python tools/fwbs_suggester.py
-python tools/tag_register_validator.py
-python tools/weekly_health_check.py
-python tools/planning_setup_validator.py
-python tools/fwbs_suggester.py
 ```
 Run the PowerShell organizer:
 ```bash
@@ -182,32 +178,34 @@ python tools/auto_refresh_pipeline.py --files ./exports/ --output ./dashboard_da
 ```
 Some tools in this repository are portfolio-oriented utilities and may require local input files or safe example datasets to run.
 
-Public-safe note
+## Public-safe note
 
 All examples in this repository are presented in a public-safe format.
 
 Where applicable:
+- project-specific values were removed or generalized
+- counts and metrics may be masked, rounded, or modified
+- contractor references are anonymized
+- examples are shown to demonstrate logic, not live operational status
 
-project-specific values were removed or generalized
-counts and metrics may be masked, rounded, or modified
-contractor references are anonymized
-examples are shown to demonstrate logic, not live operational status
-Why this matters
+## Why this matters
 
 In large EPC environments, dashboards are only useful when the underlying engineering data is reliable.
 
 This toolkit is built around one idea:
 
-improve trust in reporting by validating data before it reaches management views.
+**improve trust in reporting by validating data before it reaches management views.**
 
-Related portfolio cases
-Case 02 — Tag Data Quality Monitoring & Validation Framework
-Case 03 — Data Validation Pipeline & Reporting Refresh Prototype
-Author
+## Related portfolio cases
 
-Artem Kustov
-Engineering Data & Reporting Specialist
+- **Case 02 — Tag Data Quality Monitoring & Validation Framework**
+- **Case 03 — Data Validation Pipeline & Reporting Refresh Prototype**
+
+## Author
+
+**Artem Kustov**  
+Engineering Data & Reporting Specialist  
 Doha, Qatar
 
-Portfolio: https://art-kustuff.github.io/
-GitHub: https://github.com/Art-Kustuff
+Portfolio: `https://art-kustuff.github.io/`  
+GitHub: `https://github.com/Art-Kustuff`
