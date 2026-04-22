@@ -61,101 +61,100 @@ epc-data-toolkit/
     └── sample_naming_convention.txt
 ```
 
-Main tools
-1. Tag Register Validator
+## Main tools
 
-File: tools/tag_register_validator.py
+### 1. Tag Register Validator
+**File:** `tools/tag_register_validator.py`
 
 Single-file engineering data quality check for EasyPlant Tag Register exports.
 
-Covers:
+**Covers:**
+- mandatory field checks
+- placeholder detection
+- duplicate tags
+- parent tag self-reference
+- naming convention issues
+- completeness heatmap by discipline
+- source-oriented completeness review
 
-mandatory field checks
-placeholder detection
-duplicate tags
-parent tag self-reference
-naming convention issues
-completeness heatmap by discipline
-source-oriented completeness review
+**Portfolio role:** core logic behind **Case 02**.
 
-Portfolio role: core logic behind Case 02.
+---
 
-2. Weekly Health Check
-
-File: tools/weekly_health_check.py
+### 2. Weekly Health Check
+**File:** `tools/weekly_health_check.py`
 
 Compares two engineering data snapshots and highlights:
+- completeness improvements
+- regressions week over week
+- field-level quality trends
+- reporting-readiness changes across snapshots
 
-completeness improvements
-regressions week over week
-field-level quality trends
-reporting-readiness changes across snapshots
+**Portfolio role:** extends Case 02 from a static validator into trend / regression monitoring.
 
-Portfolio role: extends Case 02 from a static validator into trend / regression monitoring.
+---
 
-3. Planning Setup Validator
-
-File: tools/planning_setup_validator.py
+### 3. Planning Setup Validator
+**File:** `tools/planning_setup_validator.py`
 
 Checks planning setup and reporting configuration for issues that can reduce reporting reliability, such as:
+- quantity without manhours
+- MHR without quantity
+- inconsistent setup conditions
+- configuration gaps affecting downstream reporting
+- invalid or incomplete readiness fields
 
-quantity without manhours
-MHR without quantity
-inconsistent setup conditions
-configuration gaps affecting downstream reporting
-invalid or incomplete readiness fields
+**Portfolio role:** readiness / setup validation layer inside **Case 02**.
 
-Portfolio role: readiness / setup validation layer inside Case 02.
+---
 
-4. FWBS Suggestion Logic
-
-File: tools/fwbs_suggester.py
+### 4. FWBS Suggestion Logic
+**File:** `tools/fwbs_suggester.py`
 
 Applies controlled pattern-based logic to support missing FWBS assignment review.
 
-Purpose:
+**Purpose:**
+- identify likely breakdown mapping candidates
+- support engineering review
+- reduce manual searching for repeat mapping patterns
 
-identify likely breakdown mapping candidates
-support engineering review
-reduce manual searching for repeat mapping patterns
+This is designed as a **review-support utility**, not a blind auto-update mechanism.
 
-This is designed as a review-support utility, not a blind auto-update mechanism.
+**Portfolio role:** remediation-support utility inside **Case 02**.
 
-Portfolio role: remediation-support utility inside Case 02.
+---
 
-5. Auto Refresh Pipeline
-
-File: tools/auto_refresh_pipeline.py
+### 5. Auto Refresh Pipeline
+**File:** `tools/auto_refresh_pipeline.py`
 
 Prototype pipeline for:
+- extracting engineering datasets
+- running validation checks upstream
+- preparing cleaner reporting datasets
+- supporting reporting refresh workflows
+- generating machine-readable outputs for review / traceability
 
-extracting engineering datasets
-running validation checks upstream
-preparing cleaner reporting datasets
-supporting reporting refresh workflows
-generating machine-readable outputs for review / traceability
+**Portfolio role:** core logic behind **Case 03**.
 
-Portfolio role: core logic behind Case 03.
+---
 
-6. PowerShell Document Organizer
-
-File: tools/file_organizer.ps1
+### 6. PowerShell Document Organizer
+**File:** `tools/file_organizer.ps1`
 
 Small PowerShell utility for routing engineering deliverables into discipline / document-type folders based on naming convention.
 
-Features:
+**Features:**
+- dry-run mode
+- recursive scan
+- copy / move mode
+- collision-safe naming
+- CSV log
+- JSON summary
+- fallback routing to `_Unsorted`
 
-dry-run mode
-recursive scan
-copy / move mode
-collision-safe naming
-CSV log
-JSON summary
-fallback routing to _Unsorted
+**Portfolio role:** supporting Windows-side automation utility inside the broader toolkit.
 
-Portfolio role: supporting Windows-side automation utility inside the broader toolkit.
-
-Quick start
+## Quick start
 
 Install dependencies:
 
