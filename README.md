@@ -59,6 +59,7 @@ epc-data-toolkit/
 │   └── file_organizer_log_example.csv
 └── examples/
     └── sample_naming_convention.txt
+```text
 Main tools
 1. Tag Register Validator
 
