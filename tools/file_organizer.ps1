@@ -13,6 +13,7 @@ Features:
 - Handles name collisions safely
 - Sends unknown / unmatched files to _Unsorted
 - Writes CSV log and JSON summary
+- Supports summary-only console mode (-SummaryOnly)
 #>
 
 [CmdletBinding()]
@@ -33,7 +34,10 @@ param(
     [switch]$Recurse,
 
     [Parameter(Mandatory = $false)]
-    [switch]$Overwrite
+    [switch]$Overwrite,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$SummaryOnly
 )
 
 Set-StrictMode -Version Latest
@@ -61,20 +65,20 @@ $DisciplineCodes = @{
 }
 
 $DocTypeCodes = @{
-    "PID" = "P_and_ID"
-    "PFD" = "Process_Flow_Diagram"
-    "SLD" = "Single_Line_Diagram"
-    "DTS" = "Datasheet"
-    "MTO" = "Material_Take_Off"
-    "ISO" = "Isometric"
-    "LAY" = "Layout"
-    "GA"  = "General_Arrangement"
-    "SCH" = "Schedule"
-    "CAL" = "Calculation"
+    "PID"  = "P_and_ID"
+    "PFD"  = "Process_Flow_Diagram"
+    "SLD"  = "Single_Line_Diagram"
+    "DTS"  = "Datasheet"
+    "MTO"  = "Material_Take_Off"
+    "ISO"  = "Isometric"
+    "LAY"  = "Layout"
+    "GA"   = "General_Arrangement"
+    "SCH"  = "Schedule"
+    "CAL"  = "Calculation"
     "SPEC" = "Specification"
-    "MR" = "Material_Requisition"
-    "TBE" = "Technical_Bid_Evaluation"
-    "DRW" = "Drawing"
+    "MR"   = "Material_Requisition"
+    "TBE"  = "Technical_Bid_Evaluation"
+    "DRW"  = "Drawing"
 }
 
 $NamePatterns = @(
@@ -127,12 +131,12 @@ function Resolve-TargetFilePath {
 function Parse-DocumentName {
     param([string]$FileName)
 
-    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($FileName)
+    $baseName  = [System.IO.Path]::GetFileNameWithoutExtension($FileName)
     $extension = [System.IO.Path]::GetExtension($FileName)
 
     foreach ($pattern in $NamePatterns) {
         if ($baseName -match $pattern) {
-            $discCode = $Matches["Disc"]
+            $discCode    = $Matches["Disc"]
             $docTypeCode = $Matches["DocType"]
 
             $discipline = if ($DisciplineCodes.ContainsKey($discCode)) {
@@ -148,37 +152,37 @@ function Parse-DocumentName {
             }
 
             return [PSCustomObject]@{
-                FileName       = $FileName
-                BaseName       = $baseName
-                Extension      = $extension
-                Project        = $Matches["Project"]
-                Contract       = $Matches["Contract"]
-                DiscCode       = $discCode
-                Discipline     = $discipline
-                DocTypeCode    = $docTypeCode
-                DocType        = $docType
-                Number         = $Matches["Number"]
-                Revision       = $Matches["Rev"]
-                Parsed         = $true
-                ParseStatus    = if ($discipline -eq "_UnknownDiscipline" -or $docType -eq "_UnknownDocType") { "PARTIAL_MATCH" } else { "OK" }
+                FileName    = $FileName
+                BaseName    = $baseName
+                Extension   = $extension
+                Project     = $Matches["Project"]
+                Contract    = $Matches["Contract"]
+                DiscCode    = $discCode
+                Discipline  = $discipline
+                DocTypeCode = $docTypeCode
+                DocType     = $docType
+                Number      = $Matches["Number"]
+                Revision    = $Matches["Rev"]
+                Parsed      = $true
+                ParseStatus = if ($discipline -eq "_UnknownDiscipline" -or $docType -eq "_UnknownDocType") { "PARTIAL_MATCH" } else { "OK" }
             }
         }
     }
 
     return [PSCustomObject]@{
-        FileName       = $FileName
-        BaseName       = $baseName
-        Extension      = $extension
-        Project        = $null
-        Contract       = $null
-        DiscCode       = $null
-        Discipline     = "_Unsorted"
-        DocTypeCode    = $null
-        DocType        = $null
-        Number         = $null
-        Revision       = $null
-        Parsed         = $false
-        ParseStatus    = "NO_PATTERN_MATCH"
+        FileName    = $FileName
+        BaseName    = $baseName
+        Extension   = $extension
+        Project     = $null
+        Contract    = $null
+        DiscCode    = $null
+        Discipline  = "_Unsorted"
+        DocTypeCode = $null
+        DocType     = $null
+        Number      = $null
+        Revision    = $null
+        Parsed      = $false
+        ParseStatus = "NO_PATTERN_MATCH"
     }
 }
 
@@ -189,7 +193,9 @@ if (-not (Test-Path $SourcePath)) {
     throw "SourcePath not found: $SourcePath"
 }
 
-if (-not (Test-Path $DestPath) -and -not $LogOnly) {
+# Create destination folder in all modes, including LogOnly,
+# because logs/summary are written there as well.
+if (-not (Test-Path $DestPath)) {
     New-Item -ItemType Directory -Path $DestPath -Force | Out-Null
 }
 
@@ -202,6 +208,7 @@ Write-Host "Destination: $DestPath" -ForegroundColor Gray
 Write-Host "Mode:        $(if ($LogOnly) { 'LOG ONLY (dry run)' } elseif ($MoveFiles) { 'MOVE' } else { 'COPY' })" -ForegroundColor Gray
 Write-Host "Recursive:   $($Recurse.IsPresent)" -ForegroundColor Gray
 Write-Host "Overwrite:   $($Overwrite.IsPresent)" -ForegroundColor Gray
+Write-Host "SummaryOnly: $($SummaryOnly.IsPresent)" -ForegroundColor Gray
 
 $files = if ($Recurse) {
     Get-ChildItem -Path $SourcePath -File -Recurse
@@ -220,19 +227,17 @@ Write-Host ("Found {0} files" -f $files.Count) -ForegroundColor Green
 # -----------------------------
 # Main processing loop
 # -----------------------------
-$results = New-Object System.Collections.Generic.List[object]
+$results   = New-Object System.Collections.Generic.List[object]
 $processed = 0
-$copied = 0
-$moved = 0
-$unsorted = 0
-$errors = 0
+$copied    = 0
+$moved     = 0
+$unsorted  = 0
+$errors    = 0
 
 foreach ($file in $files) {
     $processed++
     $parsed = Parse-DocumentName -FileName $file.Name
 
-    # IMPORTANT FIX:
-    # If file is unparsed, send directly to DestPath\_Unsorted
     if (-not $parsed.Parsed) {
         $targetFolder = Join-Path $DestPath "_Unsorted"
         $unsorted++
@@ -240,16 +245,19 @@ foreach ($file in $files) {
     else {
         $disciplineFolder = Resolve-SafeFolderName $parsed.Discipline
         $docTypeFolder    = Resolve-SafeFolderName $parsed.DocType
-        $targetFolder = Join-Path (Join-Path $DestPath $disciplineFolder) $docTypeFolder
+        $targetFolder     = Join-Path (Join-Path $DestPath $disciplineFolder) $docTypeFolder
     }
 
     $targetFile = Resolve-TargetFilePath -FolderPath $targetFolder -FileName $file.Name -Overwrite:$Overwrite
 
     try {
         if ($LogOnly) {
-            Write-Host ("[DRY-RUN] {0} -> {1}" -f $file.FullName, $targetFile) -ForegroundColor Yellow
+            if (-not $SummaryOnly) {
+                Write-Host ("[DRY-RUN] {0} -> {1}" -f $file.FullName, $targetFile) -ForegroundColor Yellow
+            }
             $status = "DRY_RUN"
-        } else {
+        }
+        else {
             if (-not (Test-Path $targetFolder)) {
                 New-Item -ItemType Directory -Path $targetFolder -Force | Out-Null
             }
@@ -258,13 +266,16 @@ foreach ($file in $files) {
                 Move-Item -Path $file.FullName -Destination $targetFile -Force:$Overwrite
                 $moved++
                 $status = "MOVED"
-            } else {
+            }
+            else {
                 Copy-Item -Path $file.FullName -Destination $targetFile -Force:$Overwrite
                 $copied++
                 $status = "COPIED"
             }
 
-            Write-Host ("[{0}] {1} -> {2}" -f $status, $file.Name, $targetFile) -ForegroundColor Green
+            if (-not $SummaryOnly) {
+                Write-Host ("[{0}] {1} -> {2}" -f $status, $file.Name, $targetFile) -ForegroundColor Green
+            }
         }
     }
     catch {
@@ -294,35 +305,52 @@ foreach ($file in $files) {
 # -----------------------------
 # Logs
 # -----------------------------
-if (-not (Test-Path $DestPath) -and -not $LogOnly) {
+if (-not (Test-Path $DestPath)) {
     New-Item -ItemType Directory -Path $DestPath -Force | Out-Null
 }
 
-$timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$logCsvPath = Join-Path $DestPath ("organizer_log_{0}.csv" -f $timestamp)
+$timestamp       = Get-Date -Format "yyyyMMdd_HHmmss"
+$logCsvPath      = Join-Path $DestPath ("organizer_log_{0}.csv" -f $timestamp)
 $summaryJsonPath = Join-Path $DestPath ("organizer_summary_{0}.json" -f $timestamp)
 
 $results | Export-Csv -Path $logCsvPath -NoTypeInformation -Encoding UTF8
 
 $summary = [PSCustomObject]@{
-    Timestamp        = (Get-Date).ToString("s")
-    SourcePath       = $SourcePath
-    DestinationPath  = $DestPath
-    Recursive        = $Recurse.IsPresent
-    DryRun           = $LogOnly.IsPresent
-    MoveMode         = $MoveFiles.IsPresent
-    Overwrite        = $Overwrite.IsPresent
-    TotalFiles       = $processed
-    Copied           = $copied
-    Moved            = $moved
-    Unsorted         = $unsorted
-    Errors           = $errors
-    ByDiscipline     = @($results | Group-Object Discipline | Sort-Object Count -Descending | ForEach-Object {
-        [PSCustomObject]@{ Discipline = $_.Name; Count = $_.Count }
-    })
-    ByDocumentType   = @($results | Group-Object DocumentType | Sort-Object Count -Descending | ForEach-Object {
-        [PSCustomObject]@{ DocumentType = $_.Name; Count = $_.Count }
-    })
+    Timestamp       = (Get-Date).ToString("s")
+    SourcePath      = $SourcePath
+    DestinationPath = $DestPath
+    Recursive       = $Recurse.IsPresent
+    DryRun          = $LogOnly.IsPresent
+    MoveMode        = $MoveFiles.IsPresent
+    Overwrite       = $Overwrite.IsPresent
+    SummaryOnly     = $SummaryOnly.IsPresent
+    TotalFiles      = $processed
+    Copied          = $copied
+    Moved           = $moved
+    Unsorted        = $unsorted
+    Errors          = $errors
+    ByDiscipline    = @(
+        $results |
+        Group-Object Discipline |
+        Sort-Object Count -Descending |
+        ForEach-Object {
+            [PSCustomObject]@{
+                Discipline = $_.Name
+                Count      = $_.Count
+            }
+        }
+    )
+    ByDocumentType  = @(
+        $results |
+        Group-Object DocumentType |
+        Sort-Object Count -Descending |
+        ForEach-Object {
+            [PSCustomObject]@{
+                DocumentType = $_.Name
+                Count        = $_.Count
+            }
+        }
+    )
 }
 
 $summary | ConvertTo-Json -Depth 5 | Set-Content -Path $summaryJsonPath -Encoding UTF8
